@@ -21,11 +21,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:yourapp="http://schemas.android.com/apk/res-auto" >
     <item
-        android:id="@+id/menu_item_refresh"
-        android:title="@string/list_menu_refresh"
-        android:icon="?attr/ic_action_refresh"
-        yourapp:showAsAction="always" />
-    <item
         android:id="@+id/menu_search"
         android:title="@string/list_menu_search"
         android:icon="?attr/ic_action_search"

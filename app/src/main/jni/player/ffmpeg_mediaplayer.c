@@ -266,7 +266,7 @@ int decode_frame_from_packet(State *state, AVPacket *aPacket, int *frame_size_pt
     if (aPacket->stream_index == state->audio_stream) {
         	
     	if (!decoded_frame) {
-    		if (!(decoded_frame = avcodec_alloc_frame())) {
+    		if (!(decoded_frame = av_frame_alloc())) {
     			__android_log_print(ANDROID_LOG_INFO, "TAG", "Could not allocate audio frame\n");
     	        return -2;
     		}
@@ -407,7 +407,7 @@ int decode_frame_from_packet(State *state, AVPacket *aPacket, int *frame_size_pt
         //*frame_size_ptr = data_size;
         state->write_audio_callback(state->clazz, samples, data_size, from_thread);
         
-    	avcodec_free_frame(&decoded_frame);
+    	av_frame_free(&decoded_frame);
         
         free(samples);
         

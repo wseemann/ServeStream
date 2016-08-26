@@ -1,6 +1,6 @@
 /*
  * ServeStream: A HTTP stream browser/player for Android
- * Copyright 2013 William Seemann
+ * Copyright 2016 William Seemann
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 package net.sourceforge.servestream.activity;
 
 import net.sourceforge.servestream.R;
-import net.sourceforge.servestream.adapter.NavigationDrawerAdapter;
 import net.sourceforge.servestream.adapter.NavigationDrawerAdapter.ItemAccess;
 import net.sourceforge.servestream.fragment.AlarmClockFragment;
 import net.sourceforge.servestream.fragment.BrowseFragment;
@@ -28,7 +27,6 @@ import net.sourceforge.servestream.preference.UserPreferences;
 import net.sourceforge.servestream.utils.DownloadScannerDialog;
 import net.sourceforge.servestream.utils.MusicUtils;
 import net.sourceforge.servestream.utils.MusicUtils.ServiceToken;
-import net.sourceforge.servestream.utils.Utils;
 
 import android.Manifest;
 import android.app.Activity;
@@ -38,11 +36,10 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -51,18 +48,17 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 
-public class MainActivity extends ActionBarActivity implements
+public class MainActivity extends AppCompatActivity implements
 			ServiceConnection,
-			BrowseIntentListener, ItemAccess {
+			BrowseIntentListener, ItemAccess,
+		NavigationView.OnNavigationItemSelectedListener {
 	
 	private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
 	
@@ -72,69 +68,41 @@ public class MainActivity extends ActionBarActivity implements
 
 	private String mTag;
 	
-    private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
-    private ActionBarDrawerToggle mDrawerToggle;
-
-    private CharSequence mDrawerTitle;
     private CharSequence mTitle;
-    private String[] mDrawerItems;
 
 	private ServiceToken mToken;
     
     private int mCurrentSelectedPosition = 0;
-	
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-    	setTheme(UserPreferences.getTheme());
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        mTitle = mDrawerTitle = getTitle();
-        mDrawerItems = getResources().getStringArray(R.array.drawer_items);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		//setTheme(UserPreferences.getTheme());
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		setSupportActionBar(toolbar);
 
-        // set a custom shadow that overlays the main content when the drawer opens
-        mDrawerLayout.setDrawerShadow(Utils.getThemedIcon(this, R.attr.drawer_shadow), GravityCompat.START);
-        // set up the drawer's list view with items and click listener
-        mDrawerList.setAdapter(new NavigationDrawerAdapter(this, this));
-        //mDrawerList.setAdapter(new ArrayAdapter<String>(this,
-        //        R.layout.drawer_list_item, mDrawerItems));
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+		android.support.v7.app.ActionBarDrawerToggle toggle = new android.support.v7.app.ActionBarDrawerToggle(
+				this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+		drawer.setDrawerListener(toggle);
+		toggle.syncState();
 
-        // enable ActionBar app icon to behave as action to toggle nav drawer
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+		navigationView.setNavigationItemSelectedListener(this);
 
-        // ActionBarDrawerToggle ties together the the proper interactions
-        // between the sliding drawer and the action bar app icon
-        mDrawerToggle = new ActionBarDrawerToggle(
-                this,                  /* host Activity */
-                mDrawerLayout,         /* DrawerLayout object */
-                Utils.getThemedIcon(this, R.attr.ic_drawer),  /* nav drawer image to replace 'Up' caret */
-                R.string.drawer_open,  /* "open drawer" description for accessibility */
-                R.string.drawer_close  /* "close drawer" description for accessibility */
-                ) {
-            public void onDrawerClosed(View view) {
-                getSupportActionBar().setTitle(mTitle);
-            }
+		if (savedInstanceState == null) {
+			openUri(getUri());
 
-            public void onDrawerOpened(View drawerView) {
-                getSupportActionBar().setTitle(mDrawerTitle);
-            }
-        };
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
+			navigationView = (NavigationView) findViewById(R.id.nav_view);
+			navigationView.setCheckedItem(R.id.nav_urls);
+			//selectItem(0);
+		}
 
-        if (savedInstanceState == null) {
-        	openUri(getUri());
-            //selectItem(0);
-        }
-        
-        mToken = MusicUtils.bindToService(this, this);
+		mToken = MusicUtils.bindToService(this, this);
 
 		requestPermission(this);
-    }
+	}
 
     @Override
     public void onNewIntent(Intent intent) {
@@ -192,9 +160,7 @@ public class MainActivity extends ActionBarActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
          // The action bar home/up action should open or close the drawer.
          // ActionBarDrawerToggle will take care of this.
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
+
         // Handle action buttons
         switch (item.getItemId()) {
 			case (R.id.menu_item_settings):
@@ -254,21 +220,7 @@ public class MainActivity extends ActionBarActivity implements
 	    }
 	}
 	
-    /* The click listener for ListView in the navigation drawer */
-    private class DrawerItemClickListener implements ListView.OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            selectItem(position);
-        }
-    }
-
     private void selectItem(int position) {
-		if (position == 3) {
-			startActivity(new Intent(this, SettingsActivity.class));
-	    	mDrawerLayout.closeDrawer(mDrawerList);
-			return;
-		}
-    	
     	mCurrentSelectedPosition = position;
     	
     	FragmentManager fragmentManager = getSupportFragmentManager();
@@ -298,11 +250,6 @@ public class MainActivity extends ActionBarActivity implements
     	}
     	
     	mTag = tag;
-    	
-    	// update selected item and title, then close the drawer
-    	mDrawerList.setItemChecked(position, true);
-    	setTitle(mDrawerItems[position]);
-    	mDrawerLayout.closeDrawer(mDrawerList);
     }
 
     @Override
@@ -315,20 +262,6 @@ public class MainActivity extends ActionBarActivity implements
      * When using the ActionBarDrawerToggle, you must call it during
      * onPostCreate() and onConfigurationChanged()...
      */
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        // Sync the toggle state after onRestoreInstanceState has occurred.
-        mDrawerToggle.syncState();
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        // Pass any configuration change to the drawer toggls
-        mDrawerToggle.onConfigurationChanged(newConfig);
-    }
 
 	@Override
 	public void onRequestPermissionsResult(int requestCode,
@@ -460,10 +393,6 @@ public class MainActivity extends ActionBarActivity implements
     	}
     	
     	mTag = tag;
-    	
-    	mDrawerList.setItemChecked(0, true);
-    	setTitle(mDrawerItems[0]);
-    	mDrawerLayout.closeDrawer(mDrawerList);
 	}
 	
 	@Override
@@ -493,10 +422,9 @@ public class MainActivity extends ActionBarActivity implements
     	}
     	
     	mTag = tag;
-    	
-    	mDrawerList.setItemChecked(1, true);
-    	setTitle(mDrawerItems[1]);
-    	mDrawerLayout.closeDrawer(mDrawerList);
+
+		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+		navigationView.setCheckedItem(R.id.nav_browse);
 	}
 	
 	private void showDialog(String tag) {
@@ -521,5 +449,34 @@ public class MainActivity extends ActionBarActivity implements
 	@Override
 	public int getSelectedItemIndex() {
 		return mCurrentSelectedPosition;
+	}
+
+	@Override
+	public void onBackPressed() {
+		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+		if (drawer.isDrawerOpen(GravityCompat.START)) {
+			drawer.closeDrawer(GravityCompat.START);
+		} else {
+			super.onBackPressed();
+		}
+	}
+
+	@SuppressWarnings("StatementWithEmptyBody")
+	@Override
+	public boolean onNavigationItemSelected(MenuItem item) {
+		// Handle navigation view item clicks here.
+		int id = item.getItemId();
+
+		if (id == R.id.nav_urls) {
+			selectItem(0);
+		} else if (id == R.id.nav_browse) {
+			selectItem(1);
+		} else if (id == R.id.nav_alarm_clock) {
+			selectItem(2);
+		}
+
+		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+		drawer.closeDrawer(GravityCompat.START);
+		return true;
 	}
 }

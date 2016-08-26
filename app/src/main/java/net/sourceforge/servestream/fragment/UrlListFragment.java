@@ -58,12 +58,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.PopupMenu;
 import android.util.SparseBooleanArray;
@@ -77,7 +79,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 import net.sourceforge.servestream.utils.DetermineActionTask;
-import android.support.v7.app.ActionBarActivity;
 
 public class UrlListFragment extends ListFragment implements
 				DetermineActionTask.MusicRetrieverPreparedListener,
@@ -109,7 +110,9 @@ public class UrlListFragment extends ListFragment implements
     
     private ActionMode mActionMode;
     private SparseBooleanArray mChecked;
-    
+
+	private FloatingActionButton mFab;
+
 	@SuppressLint("HandlerLeak")
 	private Handler mQueueHandler = new Handler() {
 		@Override
@@ -137,7 +140,6 @@ public class UrlListFragment extends ListFragment implements
         super.onCreate(savedInstanceState);
         
         setRetainInstance(true);
-        setHasOptionsMenu(true);
     }
 	
 	@Override
@@ -146,7 +148,9 @@ public class UrlListFragment extends ListFragment implements
 		View view = inflater.inflate(R.layout.fragment_uri_list, container, false);
 		ListView list = (ListView) view.findViewById(android.R.id.list);
 		list.setEmptyView(view.findViewById(android.R.id.empty));
-		
+
+		mFab = (FloatingActionButton) view.findViewById(R.id.fab);
+
 		return view;
 	}
 	
@@ -199,7 +203,7 @@ public class UrlListFragment extends ListFragment implements
 
 					if (hasCheckedElement) {
 						if (mActionMode == null) {
-							mActionMode = ((ActionBarActivity) getActivity()).startSupportActionMode(mActionModeCallback);
+							mActionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(mActionModeCallback);
 						}
 					} else {
 						if (mActionMode != null) {
@@ -218,7 +222,7 @@ public class UrlListFragment extends ListFragment implements
 			public boolean onItemLongClick(AdapterView<?> parent, View view,
 					int position, long id) {
 				if (mActionMode == null) {
-					mActionMode = ((ActionBarActivity) getActivity()).startSupportActionMode(mActionModeCallback);
+					mActionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(mActionModeCallback);
 				    getListView().setItemChecked(position, true);
 				    view.setBackgroundColor(getActivity().getResources().getColor(R.color.selection_background_color_light));
 				    mChecked = getListView().getCheckedItemPositions().clone();
@@ -232,6 +236,14 @@ public class UrlListFragment extends ListFragment implements
 		controller.setDragInitMode(DragSortController.ON_DRAG);
 		controller.setDragHandleId(R.id.drag_handle);
 		list.setOnTouchListener(controller);
+
+		mFab.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Intent intent = new Intent(getActivity(), AddUrlActivity.class);
+				startActivity(intent);
+			}
+		});
 
 		mAdapter = new UrlListAdapter(getActivity(), new ArrayList<UriBean>(), this);
 		setListAdapter(mAdapter);
@@ -290,23 +302,6 @@ public class UrlListFragment extends ListFragment implements
 		mStreamdb.close();
 	}
 	
-	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.url_list, menu);
-	    super.onCreateOptionsMenu(menu, inflater);
-	}
-		
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-	    	case (R.id.menu_item_add):
-				startActivity(new Intent(getActivity(), AddUrlActivity.class));
-				return true;
-	        default:
-	        	return super.onOptionsItemSelected(item);
-	    }
-	}
-
 	private boolean processUri(String input) {
 		Uri uri = TransportFactory.getUri(input);
 

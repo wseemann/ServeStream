@@ -18,7 +18,6 @@
 package net.sourceforge.servestream.service;
 
 import android.annotation.SuppressLint;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -36,11 +35,13 @@ import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -48,8 +49,11 @@ import android.os.SystemClock;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.support.v4.app.NotificationCompat;
+import android.support.v7.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
@@ -73,7 +77,6 @@ import net.sourceforge.servestream.media.ShoutCastRetrieverTask;
 import net.sourceforge.servestream.provider.Media;
 import net.sourceforge.servestream.receiver.ConnectivityReceiver;
 import net.sourceforge.servestream.receiver.MediaButtonIntentReceiver;
-import net.sourceforge.servestream.service.RemoteControlClientCompat.MetadataEditorCompat;
 import net.sourceforge.servestream.transport.AbsTransport;
 import net.sourceforge.servestream.transport.TransportFactory;
 import net.sourceforge.servestream.utils.DetermineActionTask;
@@ -201,7 +204,7 @@ public class MediaPlaybackService extends Service implements
 
     // our RemoteControlClient object, which will use remote control APIs available in
     // SDK level >= 14, if they're available.
-    private RemoteControlClientCompat mRemoteControlClientCompat;
+    private MediaSessionCompat mediaSession;
     
     // The component name of MusicIntentReceiver, for use with media button and remote control APIs
     private ComponentName mMediaButtonReceiverComponent;
@@ -469,6 +472,58 @@ public class MediaPlaybackService extends Service implements
         }
     };
 
+    private final MediaSessionCompat.Callback mMediaSessionCallback = new MediaSessionCompat.Callback() {
+
+        @Override
+        public boolean onMediaButtonEvent(Intent intent) {
+            if (intent != null) {
+                String action = intent.getAction();
+                String cmd = intent.getStringExtra("command");
+                //MusicUtils.debugLog("onStartCommand " + action + " / " + cmd);
+
+                if (CMDNEXT.equals(cmd) || NEXT_ACTION.equals(action)) {
+                    gotoNext(true);
+                } else if (CMDPREVIOUS.equals(cmd) || PREVIOUS_ACTION.equals(action)) {
+                    prev();
+                } else if (CMDTOGGLEPAUSE.equals(cmd) || TOGGLEPAUSE_ACTION.equals(action)) {
+                    if (intent.getBooleanExtra("from_connectivity_receiver", false) && !mPausedByConnectivityReceiver) {
+                        return super.onMediaButtonEvent(intent);
+                    }
+
+                    if (isPlaying()) {
+                        pause(true);
+                        mPausedByTransientLossOfFocus = false;
+                    } else {
+                        play();
+                    }
+                } else if (CMDPAUSE.equals(cmd) || PAUSE_ACTION.equals(action)) {
+                    boolean wasPlaying = mIsSupposedToBePlaying;
+
+                    pause(true);
+                    mPausedByTransientLossOfFocus = false;
+
+                    if (wasPlaying != mIsSupposedToBePlaying) {
+                        mPausedByConnectivityReceiver = intent.getBooleanExtra("from_connectivity_receiver", false);
+                    }
+                } else if (CMDPLAY.equals(cmd)) {
+                    play();
+                } else if (CMDSTOP.equals(cmd)) {
+                    pause(true);
+                    mPausedByTransientLossOfFocus = false;
+                    seek(0);
+                } else if (AppWidgetOneProvider.CMDAPPWIDGETUPDATE.equals(cmd)) {
+                    // Someone asked us to refresh a set of specific widgets, probably
+                    // because they were just added.
+                    int[] appWidgetIds = intent.getIntArrayExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS);
+                    //TODO Fix this!
+                    mAppWidgetProvider.performUpdate(MediaPlaybackService.this, appWidgetIds, "");
+                }
+            }
+
+            return super.onMediaButtonEvent(intent);
+        }
+    };
+
     private OnAudioFocusChangeListener mAudioFocusListener = new OnAudioFocusChangeListener() {
         public void onAudioFocusChange(int focusChange) {
             mMediaplayerHandler.obtainMessage(FOCUSCHANGE, focusChange, 0).sendToTarget();
@@ -502,29 +557,36 @@ public class MediaPlaybackService extends Service implements
     	
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         mMediaButtonReceiverComponent = new ComponentName(this, MediaButtonIntentReceiver.class);
-        mAudioManager.registerMediaButtonEventReceiver(mMediaButtonReceiverComponent);
-        
-        // Use the remote control APIs (if available) to set the playback state
-        if (mRemoteControlClientCompat == null) {
-            Intent intent = new Intent(Intent.ACTION_MEDIA_BUTTON);
-            intent.setComponent(mMediaButtonReceiverComponent);
-            mRemoteControlClientCompat = new RemoteControlClientCompat(
-                    PendingIntent.getBroadcast(this /*context*/,
-                            0 /*requestCode, ignored*/, intent /*intent*/, 0 /*flags*/));
-            RemoteControlHelper.registerRemoteControlClient(mAudioManager,
-                    mRemoteControlClientCompat);
+
+        mMediaButtonReceiverComponent = new ComponentName(this, MediaButtonIntentReceiver.class);
+
+        ComponentName eventReceiver = new ComponentName(getPackageName(), MediaButtonIntentReceiver.class.getName());
+        Intent mediaButtonIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+        mediaButtonIntent.setComponent(eventReceiver);
+        PendingIntent buttonReceiverIntent = PendingIntent.getBroadcast(this, 0, mediaButtonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mediaSession = new MediaSessionCompat(this, LOGTAG, eventReceiver, buttonReceiverIntent);
+
+        try {
+            mediaSession.setCallback(mMediaSessionCallback);
+            mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+            mediaSession.setActive(true);
+        } catch (NullPointerException ex) {
+            // on some devices (Huawei) setting active can cause a NullPointerException
+            // even with correct use of the api.
+            // See http://stackoverflow.com/questions/31556679/android-huawei-mediassessioncompat
+            // and https://plus.google.com/+IanLake/posts/YgdTkKFxz7d
+            Log.e(LOGTAG, "NullPointerException while setting up MediaSession");
+            ex.printStackTrace();
         }
-        
-        mRemoteControlClientCompat.setTransportControlFlags(
-        		RemoteControlClientCompat.FLAG_KEY_MEDIA_PREVIOUS |
-        		RemoteControlClientCompat.FLAG_KEY_MEDIA_PLAY |
-        		RemoteControlClientCompat.FLAG_KEY_MEDIA_PAUSE |
-        		RemoteControlClientCompat.FLAG_KEY_MEDIA_NEXT |
-        		RemoteControlClientCompat.FLAG_KEY_MEDIA_STOP);
-        
+
         mPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mPreferences.registerOnSharedPreferenceChangeListener(this);
-        
+
+        // needs mPreferences to not be null
+        updateMediaSessionMetadata();
+        setPlayerStatus();
+
 		final boolean lockingWifi = mPreferences.getBoolean(PreferenceConstants.WIFI_LOCK, true);
 		mConnectivityManager = new ConnectivityReceiver(this, lockingWifi);
 		
@@ -558,6 +620,38 @@ public class MediaPlaybackService extends Service implements
         mDelayedStopHandler.sendMessageDelayed(msg, IDLE_DELAY);
     }
 
+    private void updateMediaSessionMetadata() {
+        MediaMetadataCompat.Builder builder = new MediaMetadataCompat.Builder();
+        builder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, getArtistName());
+        builder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM, getAlbumName());
+        builder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, getTrackName());
+        builder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION, getDuration());
+        if (mPreferences.getBoolean(PreferenceConstants.RETRIEVE_ALBUM_ART, false)) {
+            builder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, getAlbumArt(false));
+        }
+
+        mediaSession.setMetadata(builder.build());
+    }
+
+    private void setPlayerStatus() {
+        PlaybackStateCompat.Builder sessionState = new PlaybackStateCompat.Builder();
+
+        int state;
+
+        if (isPlaying()) {
+            state = PlaybackStateCompat.STATE_PLAYING;
+        } else {
+            state = PlaybackStateCompat.STATE_PAUSED;
+        }
+        sessionState.setState(state, 1, 1.0f);
+        sessionState.setActions(PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+                | PlaybackStateCompat.ACTION_PLAY
+                | PlaybackStateCompat.ACTION_PAUSE
+                | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
+                | PlaybackStateCompat.ACTION_STOP);
+        mediaSession.setPlaybackState(sessionState.build());
+    }
+
     @Override
     public void onDestroy() {
         // Check that we're not being destroyed while something is still playing.
@@ -584,9 +678,7 @@ public class MediaPlaybackService extends Service implements
         mPlayer = null;
 
         mAudioManager.abandonAudioFocus(mAudioFocusListener);
-        RemoteControlHelper.unregisterRemoteControlClient(mAudioManager,
-                mRemoteControlClientCompat);
-        
+
         // make sure there aren't any other messages coming
         mDelayedStopHandler.removeCallbacksAndMessages(null);
         mMediaplayerHandler.removeCallbacksAndMessages(null);
@@ -864,7 +956,7 @@ public class MediaPlaybackService extends Service implements
                     play();
                 }
             } else if (CMDTOGGLEPAUSE.equals(cmd) || TOGGLEPAUSE_ACTION.equals(action)) {
-                boolean remove_status_icon =  (intent.getIntExtra(CMDNOTIF, 0) != 2);
+                boolean remove_status_icon =  (intent.getIntExtra(CMDNOTIF, 0) != 1);
                 if (isPlaying()) {
                     pause(remove_status_icon);
                     mPausedByTransientLossOfFocus = false;
@@ -1026,9 +1118,8 @@ public class MediaPlaybackService extends Service implements
         bluetoothNotifyChange(what);
 
         if (what.equals(PLAYSTATE_CHANGED)) {
-            mRemoteControlClientCompat.setPlaybackState(isPlaying() ?
-            		RemoteControlClientCompat.PLAYSTATE_PLAYING : RemoteControlClientCompat.PLAYSTATE_PAUSED);
-            
+            setPlayerStatus();
+
             if (isPlaying() && mRetrieveShoutCastMetadata) {
     			mShoutCastRetrieverTask = new ShoutCastRetrieverTask(MediaPlaybackService.this, mPlayList[mPlayPos]);
     			mShoutCastRetrieverTask.start();
@@ -1040,15 +1131,7 @@ public class MediaPlaybackService extends Service implements
             }
         } else if (what.equals(META_CHANGED)) {
             // Update the remote controls
-            MetadataEditorCompat metadataEditor = mRemoteControlClientCompat.editMetadata(true);
-            metadataEditor.putString(2, getArtistName());
-            metadataEditor.putString(1, getAlbumName());
-            metadataEditor.putString(7, getTrackName());
-            metadataEditor.putLong(9, getDuration());
-            if (mPreferences.getBoolean(PreferenceConstants.RETRIEVE_ALBUM_ART, false)) {
-            	metadataEditor.putBitmap(100, getAlbumArt(false));
-            }
-            metadataEditor.apply();
+            updateMediaSessionMetadata();
         }
 
         if (what.equals(QUEUE_CHANGED)) {
@@ -1461,161 +1544,87 @@ public class MediaPlaybackService extends Service implements
 
     private void updateNotification(boolean updateNotification) {
         String contentText;
-    	
-    	String trackName = getTrackName();
-    	if (trackName == null || trackName.equals(Media.UNKNOWN_STRING)) {
-    		trackName = getMediaUri();
-    	}
-    	
+
+        String trackName = getTrackName();
+        if (trackName == null || trackName.equals(Media.UNKNOWN_STRING)) {
+            trackName = getMediaUri();
+        }
+
         String artist = getArtistName();
-    	if (artist == null || artist.equals(Media.UNKNOWN_STRING)) {
-    		artist = getString(R.string.unknown_artist_name);
-    	}
-        
-    	String album = getAlbumName();
+        if (artist == null || artist.equals(Media.UNKNOWN_STRING)) {
+            artist = getString(R.string.unknown_artist_name);
+        }
+
+        String album = getAlbumName();
         if (album == null || album.equals(Media.UNKNOWN_STRING)) {
             contentText = getString(R.string.notification_alt_info, artist);
         } else {
-        	contentText = getString(R.string.notification_artist_album, artist, album);
+            contentText = getString(R.string.notification_artist_album, artist, album);
         }
-        
-      	TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-    	stackBuilder.addNextIntentWithParentStack(new Intent(this, MediaPlayerActivity.class)
-        	.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
-    	PendingIntent contentIntent = stackBuilder.getPendingIntent((int) System.currentTimeMillis(), 0);
-        
-        NotificationCompat.Builder status = new NotificationCompat.Builder(this)
-        		.setContentTitle(trackName)
-        		.setContentText(contentText)
+
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addNextIntentWithParentStack(new Intent(this, MediaPlayerActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+        PendingIntent contentIntent = stackBuilder.getPendingIntent((int) System.currentTimeMillis(), 0);
+
+        NotificationCompat.MediaStyle style = new NotificationCompat.MediaStyle();
+        style.setMediaSession(mediaSession.getSessionToken());
+        style.setShowCancelButton(true);
+        style.setCancelButtonIntent(createPendingIntent(3, CMDSTOP));
+
+        NotificationCompat.Builder builder = (NotificationCompat.Builder) new NotificationCompat.Builder(this)
+                .setContentTitle(trackName)
+                .setContentText(contentText)
                 .setContentIntent(contentIntent)
-                .setWhen(0);
-		
-        int trackId = getTrackId();
-	    if (mPreferences.getBoolean(PreferenceConstants.RETRIEVE_ALBUM_ART, false) && trackId != -1) {
-	    	Bitmap bitmap = getAlbumArt(true);
-	    	if (bitmap != null) {
-	        	status.setLargeIcon(bitmap);
-	    	}
-	    }
-	    
-    	status.setSmallIcon(R.drawable.notification_icon);
-        
-	    Notification notification = status.build();
-	    
-	    // If the user has a phone running Android 4.0+ show an expanded notification
-	    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
-	    	notification = buildExpandedView(notification, updateNotification);
-	    }
-	    
-		if (!updateNotification) {
-    		startForeground(PLAYBACKSERVICE_STATUS, notification);
-    	} else {
-    		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    		notificationManager.notify(PLAYBACKSERVICE_STATUS, notification);
-    	}
-    }
-    
-    @SuppressLint("NewApi")
-	private Notification buildExpandedView(Notification notification, boolean updateNotification) {
-    	RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notification_small);
-    	RemoteViews expandedContentView = new RemoteViews(getPackageName(), R.layout.notification_expanded);
-    	setupContentView(contentView, updateNotification);
-    	setupExpandedContentView(expandedContentView, updateNotification);
-    	
-        notification.contentView = contentView;
-        notification.bigContentView = expandedContentView;
-        return notification;
-    }
-    
-    private void setupContentView(RemoteViews rv, boolean updateNotification) {
-    	String contentText;
-     	
-     	String trackName = getTrackName();
-     	if (trackName == null || trackName.equals(Media.UNKNOWN_STRING)) {
-     		trackName = getMediaUri();
-     	}
-     	
-        String artist = getArtistName();
-     	if (artist == null || artist.equals(Media.UNKNOWN_STRING)) {
-     		artist = getString(R.string.unknown_artist_name);
-     	}
-         
-     	String album = getAlbumName();
-        if (album == null || album.equals(Media.UNKNOWN_STRING)) {
-        	contentText = getString(R.string.notification_alt_info, artist);
-        } else {
-        	contentText = getString(R.string.notification_artist_album, artist, album);
-        }
-        
-        if (updateNotification) {
-        	if (isPlaying()) {
-        		rv.setImageViewResource(R.id.play_pause, android.R.drawable.ic_media_pause);
-        	} else {
-        		rv.setImageViewResource(R.id.play_pause, android.R.drawable.ic_media_play);
-        	}
-        } else {
-        	rv.setImageViewResource(R.id.play_pause, android.R.drawable.ic_media_pause);
-        }
-    	
-        int trackId = getTrackId();
-	    if (mPreferences.getBoolean(PreferenceConstants.RETRIEVE_ALBUM_ART, false) && trackId != -1) {
-	    	Bitmap bitmap = getAlbumArt(true);
-	    	if (bitmap != null) {
-	    		rv.setImageViewBitmap(R.id.coverart, bitmap);
-	    	}
-	    }
-        
-    	// set the text for the notifications
-    	rv.setTextViewText(R.id.title, trackName);
-    	rv.setTextViewText(R.id.subtitle, contentText);
+                .setWhen(0)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.albumart_mp_unknown_expanded));
+                //.setColor(Color.BLACK);
 
-    	rv.setOnClickPendingIntent(R.id.play_pause, createPendingIntent(2, CMDTOGGLEPAUSE));
-    	rv.setOnClickPendingIntent(R.id.next, createPendingIntent(3, CMDNEXT));
-    	rv.setOnClickPendingIntent(R.id.close, createPendingIntent(4, CMDSTOP));
-    }
-    
-    private void setupExpandedContentView(RemoteViews rv, boolean updateNotification) {
-    	String trackName = getTrackName();
-    	if (trackName == null || trackName.equals(Media.UNKNOWN_STRING)) {
-    			trackName = getMediaUri();
-    	}
-    	
-        String artist = getArtistName();
-    	if (artist == null || artist.equals(Media.UNKNOWN_STRING)) {
-    		artist = getString(R.string.unknown_artist_name);
-    	}
-        
-    	String album = getAlbumName();
-        
-        if (updateNotification) {
-        	if (isPlaying()) {
-        		rv.setImageViewResource(R.id.play_pause, android.R.drawable.ic_media_pause);
-        	} else {
-        		rv.setImageViewResource(R.id.play_pause, android.R.drawable.ic_media_play);
-        	}
-        } else {
-        	rv.setImageViewResource(R.id.play_pause, android.R.drawable.ic_media_pause);
-        }
-    	
         int trackId = getTrackId();
-	    if (mPreferences.getBoolean(PreferenceConstants.RETRIEVE_ALBUM_ART, false) && trackId != -1) {
-	    	Bitmap bitmap = getAlbumArt(true);
-	    	if (bitmap != null) {
-	    		rv.setImageViewBitmap(R.id.coverart, bitmap);
-	    	}
-	    }
-        
-    	// set the text for the notifications
-    	rv.setTextViewText(R.id.firstLine, trackName);
-    	rv.setTextViewText(R.id.secondLine, album);
-    	rv.setTextViewText(R.id.thirdLine, artist);
+        if (mPreferences.getBoolean(PreferenceConstants.RETRIEVE_ALBUM_ART, false) && trackId != -1) {
+            Bitmap bitmap = getAlbumArt(true);
+            if (bitmap != null) {
+                builder.setLargeIcon(bitmap);
+            }
+        }
 
-    	rv.setOnClickPendingIntent(R.id.prev, createPendingIntent(1, CMDPREVIOUS));
-    	rv.setOnClickPendingIntent(R.id.play_pause, createPendingIntent(2, CMDTOGGLEPAUSE));
-    	rv.setOnClickPendingIntent(R.id.next, createPendingIntent(3, CMDNEXT));
-    	rv.setOnClickPendingIntent(R.id.close, createPendingIntent(4, CMDSTOP));
+        builder.addAction(createPendingIntent(android.R.drawable.ic_media_previous, "Previous", 0, CMDPREVIOUS));
+
+        if (updateNotification) {
+            if (isPlaying()) {
+                builder.addAction(createPendingIntent(android.R.drawable.ic_media_pause, "Play", 1, CMDTOGGLEPAUSE));
+            } else {
+                builder.addAction(createPendingIntent(android.R.drawable.ic_media_play, "Pause", 1, CMDTOGGLEPAUSE));
+            }
+        } else {
+            builder.addAction(createPendingIntent(android.R.drawable.ic_media_pause, "Play", 1, CMDTOGGLEPAUSE));
+        }
+
+        builder.addAction(createPendingIntent(android.R.drawable.ic_media_next, "Next", 2, CMDNEXT));
+
+        style.setShowActionsInCompactView(0,1,2);
+
+        builder.setStyle(style);
+
+        if (!updateNotification) {
+            startForeground(PLAYBACKSERVICE_STATUS, builder.build());
+        } else {
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.notify(PLAYBACKSERVICE_STATUS, builder.build());
+        }
     }
-    
+
+    private NotificationCompat.Action createPendingIntent(int icon, String title, int requestCode, String command) {
+        Intent intent = new Intent(this, MediaPlaybackService.class);
+        intent.setAction(MediaPlaybackService.SERVICECMD);
+        intent.putExtra(MediaPlaybackService.CMDNOTIF, requestCode);
+        intent.putExtra(MediaPlaybackService.CMDNAME, command);
+        PendingIntent pendingIntent = PendingIntent.getService(this, requestCode, intent, 0);
+
+        return new NotificationCompat.Action.Builder(icon, title, pendingIntent).build();
+    }
+
     private PendingIntent createPendingIntent(int requestCode, String command) {
         Intent intent = new Intent(this, MediaPlaybackService.class);
         intent.setAction(MediaPlaybackService.SERVICECMD);

@@ -56,8 +56,8 @@
     	
     	<item name="attr/nav_drawer_background">#3B3B3B</item>
     </style>
-    
-    <style name="Theme.ServeStream.DarkActionBar" parent="@style/Theme.AppCompat.Light.DarkActionBar">
+
+    <style name="Theme.ServeStream.DarkActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="attr/ic_action_search">@drawable/ic_action_search_dark</item>
         <item name="attr/ic_action_new">@drawable/ic_action_new_dark</item>
         <item name="attr/drawer_shadow">@drawable/drawer_shadow_dark</item>
@@ -99,5 +99,23 @@
         <item name="android:actionModePasteDrawable" tools:targetApi="11">@drawable/ic_action_paste</item>
         <item name="android:actionModeSelectAllDrawable" tools:targetApi="14">@drawable/ic_action_select_all</item>
     </style>
-    
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/blue</item>
+        <item name="colorPrimaryDark">@color/blue</item>
+        <item name="colorAccent">@color/blue</item>
+    </style>
+
+    <style name="Theme.ServeStream.DarkActionBar.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionModeOverlay">true</item>
+    </style>
+
+    <style name="Theme.ServeStream.DarkActionBar.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.ServeStream.DarkActionBar.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
 </resources>

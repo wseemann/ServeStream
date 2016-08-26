@@ -18,6 +18,7 @@
 package net.sourceforge.servestream.fragment;
 
 import android.app.AlertDialog;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.app.LoaderManager;
@@ -27,13 +28,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
+import android.support.v4.app.Fragment;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -59,7 +57,7 @@ import net.sourceforge.servestream.alarm.ToastMaster;
 /**
  * AlarmClock application.
  */
-public class AlarmClockFragment extends ListFragment implements
+public class AlarmClockFragment extends Fragment implements
 	OnItemClickListener, LoaderManager.LoaderCallbacks<Cursor> {
 
 	public static final String PREFERENCES = "AlarmClock";
@@ -75,6 +73,20 @@ public class AlarmClockFragment extends ListFragment implements
     private ListView mAlarmsList;
     private AlarmTimeAdapter mAdapter;
 
+    private FloatingActionButton mFab;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_alarm_clock, container, false);
+        ListView list = (ListView) view.findViewById(android.R.id.list);
+        list.setEmptyView(view.findViewById(android.R.id.empty));
+
+        mFab = (FloatingActionButton) view.findViewById(R.id.fab);
+
+        return view;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,16 +99,21 @@ public class AlarmClockFragment extends ListFragment implements
 	public void onActivityCreated (Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 	     
-		setListShownNoAnimation(true);
-		
         mFactory = LayoutInflater.from(getActivity());
         
         mAdapter = new AlarmTimeAdapter(getActivity(), null, false);
-        mAlarmsList = getListView();
+        mAlarmsList = (ListView) getView().findViewById(android.R.id.list);
         mAlarmsList.setAdapter(mAdapter);
         mAlarmsList.setVerticalScrollBarEnabled(true);
         mAlarmsList.setOnItemClickListener(this);
         mAlarmsList.setOnCreateContextMenuListener(this);
+
+        mFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addNewAlarm();
+            }
+        });
 
         getLoaderManager().initLoader(URL_LOADER, null, this);
 	}
@@ -270,24 +287,6 @@ public class AlarmClockFragment extends ListFragment implements
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_item_add_alarm:
-                addNewAlarm();
-                return true;
-            default:
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-    
-	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.alarm_clock_menu, menu);
-	    super.onCreateOptionsMenu(menu, inflater);
-	}
-    
     public void onItemClick(AdapterView<?> parent, View v, int pos, long id) {
         Intent intent = new Intent(getActivity(), SetAlarmActivity.class);
         intent.putExtra(Alarms.ALARM_ID, (int) id);

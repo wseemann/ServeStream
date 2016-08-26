@@ -33,7 +33,9 @@
         <ImageView
         	android:layout_width="wrap_content"
         	android:layout_height="match_parent"
-        	android:background="@drawable/ic_reorder" />
+        	android:src="@drawable/ic_reorder"
+			android:background="@null"
+			android:scaleType="center" />
         
     	<net.sourceforge.servestream.bitmap.RecyclingImageView
         	android:id="@+id/icon"

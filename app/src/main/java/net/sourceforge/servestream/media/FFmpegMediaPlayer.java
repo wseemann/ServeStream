@@ -544,9 +544,19 @@ public class FFmpegMediaPlayer extends AbstractMediaPlayer
     }*/
     
     private final static String TAG = "FFmpegMediaPlayer";
-    
+
+    private static final String [] JNI_LIBRARIES = {
+            "avutil",
+            "swscale",
+            "avcodec",
+            "avformat",
+            "ffmpeg_mediaplayer_jni"
+    };
+
     static {
-    	System.loadLibrary("ffmpeg_mediaplayer_jni");
+        for (int i = 0; i < JNI_LIBRARIES.length; i++) {
+            System.loadLibrary(JNI_LIBRARIES[i]);
+        }
         native_init();
         initializeStaticCompatMethods();
     }

@@ -1043,8 +1043,8 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     assert(env != NULL);
 
     if (register_net_sourceforge_servestream_media_FFmpegMediaPlayer(env) < 0) {
-        __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, "ERROR: FFmpegMediaPlayer native registration failed\n");
-        goto bail;
+        //__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, "ERROR: FFmpegMediaPlayer native registration failed\n");
+        //goto bail;
     }
 
     /* success -- return valid version number */

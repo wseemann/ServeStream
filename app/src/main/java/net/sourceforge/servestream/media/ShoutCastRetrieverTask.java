@@ -24,10 +24,14 @@ import java.util.regex.Pattern;
 
 import net.sourceforge.servestream.provider.Media;
 
+import wseemann.media.FFmpegMediaMetadataRetriever;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+
+import wseemann.media.FFmpegMediaMetadataRetriever;
 
 public class ShoutCastRetrieverTask {
 	private Context mContext = null;

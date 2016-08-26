@@ -117,7 +117,7 @@ public class SettingsFragment extends net.sourceforge.servestream.preference.Pre
 
 					});
 			
-			findPreference(PreferenceConstants.THEME).setOnPreferenceChangeListener(
+			/*findPreference(PreferenceConstants.THEME).setOnPreferenceChangeListener(
                     new OnPreferenceChangeListener() {
 
                         @Override
@@ -129,7 +129,7 @@ public class SettingsFragment extends net.sourceforge.servestream.preference.Pre
                 			getActivity().finish();
                             return true;
                         }
-                    });
+                    });*/
 		}
 	}
 

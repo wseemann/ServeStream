@@ -22,6 +22,8 @@ import java.util.HashMap;
 import net.sourceforge.servestream.provider.Media;
 import net.sourceforge.servestream.preference.PreferenceConstants;
 
+import wseemann.media.FFmpegMediaMetadataRetriever;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -30,6 +32,8 @@ import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.SparseArray;
+
+import wseemann.media.FFmpegMediaMetadataRetriever;
 
 public class MetadataRetrieverTask implements Runnable {
 	private static final String TAG = MetadataRetrieverTask.class.getName();

@@ -173,6 +173,8 @@ public class MiniControllerFragment extends Fragment implements ServiceConnectio
 					id = mService.getAudioId();
 				}
 
+				mCoverart.setImageDrawable(getResources().getDrawable(R.drawable.albumart_mp_unknown_list));
+
 				if (id == -1) {
 					//mCoverart.setVisibility(View.GONE);
 				} else {

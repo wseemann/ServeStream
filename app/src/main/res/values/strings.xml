@@ -163,6 +163,7 @@
     <!-- Empty list labels -->
     <string name="no_items_label">There are no items in this list.</string>
     <string name="no_urls_label">You haven\'t entered any urls yet.</string>
+    <string name="no_alarms_label">No alarms set.</string>
     <string name="no_results_label">No results found.</string>
     <string name="no_paired_devices_label">No paired devices found.</string>
     
@@ -321,6 +322,9 @@
     <string name="failed_no_connection">No connection to the cast device is present</string>
     <string name="failed_no_connection_trans">Connection to the cast device has been lost. Application is trying to re-establish the connection, if possible. Please wait for a few seconds and try again.</string>
     <string name="failed_perform_action">Failed to perform the action</string>
-    
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
 </resources>
 

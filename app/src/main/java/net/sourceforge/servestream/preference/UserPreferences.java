@@ -60,7 +60,8 @@ public class UserPreferences implements
 	private void loadPreferences() {
 		SharedPreferences sp = PreferenceManager
 				.getDefaultSharedPreferences(mContext);
-		mTheme = readThemeValue(sp.getString(PreferenceConstants.THEME, "0"));
+		//mTheme = readThemeValue(sp.getString(PreferenceConstants.THEME, "0"));
+		mTheme = R.style.Theme_ServeStream_DarkActionBar;;
 	}
 
 	private int readThemeValue(String valueFromPrefs) {

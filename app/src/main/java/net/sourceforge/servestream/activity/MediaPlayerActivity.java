@@ -144,7 +144,7 @@ public class MediaPlayerActivity extends ActionBarActivity implements MusicUtils
         
         mCurrentTime = (TextView) findViewById(R.id.position_text);
         mTotalTime = (TextView) findViewById(R.id.duration_text);
-        mProgress = (ProgressBar) findViewById(R.id.seek_bar);
+        mProgress = (SeekBar) findViewById(R.id.seek_bar);
 
         mPrevButton = (RepeatingImageButton) findViewById(R.id.previous_button);
         mPrevButton.setOnClickListener(mPrevListener);
@@ -1000,7 +1000,7 @@ public class MediaPlayerActivity extends ActionBarActivity implements MusicUtils
     
     private TextView mCurrentTime;
     private TextView mTotalTime;
-    private ProgressBar mProgress;
+    private SeekBar mProgress;
     private SeekBar mVolume;
     private long mPosOverride = -1;
     private boolean mFromTouch = false;

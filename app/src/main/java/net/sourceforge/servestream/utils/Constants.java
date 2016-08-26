@@ -20,7 +20,7 @@ package net.sourceforge.servestream.utils;
 public class Constants {
 
 	public static final String SERVESTREAM_PLAYSTORE_URI = "market://details?id=net.sourceforge.servestream";
-	public static final String SERVESTREAM_PROJECT_PAGE = "http://sourceforge.net/projects/servestream";
+	public static final String SERVESTREAM_PROJECT_PAGE = "https://github.com/wseemann/ServeStream";
 	
 	public static final String SERVESTREAM_DONATE_PAGE = "https://sourceforge.net/p/servestream/donate";
 	

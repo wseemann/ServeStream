@@ -8,8 +8,17 @@ android {
 
     defaultConfig {
         applicationId "net.sourceforge.servestream"
-        minSdkVersion 11
+        minSdkVersion 12
         targetSdkVersion 23
+        versionName "0.7.1"
+        versionCode 106
+    }
+
+    lintOptions {
+        checkReleaseBuilds false
+        // Or, if you prefer, you can continue to check for errors in release builds,
+        // but continue the build even when errors are found:
+        abortOnError false
     }
 
     buildTypes {
@@ -25,7 +34,7 @@ android {
     }
 
     task buildFFmpeg(type: Exec, description: 'Compile FFmpeg source via NDK') {
-        def dir = file('src/main/scripts/build-ffmpeg.sh').absolutePath
+        def dir = file('src/main/ffmpeg/build-ffmpeg.sh').absolutePath
         commandLine "$dir"
     }
 
@@ -96,13 +105,13 @@ android {
         }
     }
 
-    Map<String, Integer> versionCodes = [armeabi: 10, 'armeabi-v7a': 11, mips: 12, x86: 13]
+    Map<String, Integer> versionCodes = [armeabi: 106, 'armeabi-v7a': 107, mips: 108, x86: 109]
 
     android.applicationVariants.all { variant ->
         // assign different version code for each output
         variant.outputs.each { output ->
             int abiVersionCode = versionCodes.get(output.getFilter(com.android.build.OutputFile.ABI)) ?: 0
-            output.versionCodeOverride = abiVersionCode + 6
+            output.versionCodeOverride = abiVersionCode + 0
             // android.defaultConfig.versionCode
         }
     }
@@ -114,4 +123,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:support-v4:23.1.1'
     compile project(':dslv')
+    compile 'com.android.support:design:23.4.0'
 }

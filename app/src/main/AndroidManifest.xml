@@ -24,10 +24,6 @@
 	android:versionCode="105"
 	android:installLocation="auto" >
 
-	<uses-sdk
-	    android:targetSdkVersion="23"
-	    android:minSdkVersion="11" />
-
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.BLUETOOTH" />
 	<uses-permission android:name="android.permission.BROADCAST_STICKY" />
@@ -65,6 +61,7 @@
 
 		<activity
 		    android:name=".activity.MainActivity"
+			android:theme="@style/Theme.ServeStream.DarkActionBar.NoActionBar"
 		    android:launchMode="singleTop" >
 		    
 			<intent-filter>

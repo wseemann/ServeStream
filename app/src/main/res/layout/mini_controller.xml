@@ -10,8 +10,7 @@
         android:layout_width="@dimen/mini_controller_icon_width"
         android:layout_height="@dimen/mini_controller_icon_height"
         android:layout_alignParentLeft="true"
-        android:layout_marginLeft="7dp"
-        android:src="@drawable/albumart_mp_unknown_list"/>
+        android:layout_marginLeft="7dp"/>
 
     <ImageView
         android:id="@+id/playPauseView"

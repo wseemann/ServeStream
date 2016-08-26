@@ -6,7 +6,7 @@
     -->
     <dimen name="mini_controller_font_size_line1">15sp</dimen>
     <dimen name="mini_controller_font_size_line2">13sp</dimen>
-    <dimen name="mini_controller_icon_width">124dp</dimen>
+    <dimen name="mini_controller_icon_width">70dp</dimen>
     <dimen name="mini_controller_icon_height">70dp</dimen>
 
 </resources>

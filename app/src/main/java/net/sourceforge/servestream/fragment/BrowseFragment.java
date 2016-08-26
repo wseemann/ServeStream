@@ -50,6 +50,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.PopupMenu;
 import android.util.SparseArray;
 import android.view.ContextMenu;
@@ -84,7 +85,9 @@ public class BrowseFragment extends ListFragment implements
     private BrowseAdapter mAdapter;
     
     private UriBean mSelectedMenuItem;
-    
+
+	private SwipeRefreshLayout mSwiperefresh;
+
 	@SuppressLint("HandlerLeak")
 	private Handler mHandler = new Handler() {
 		@Override
@@ -115,7 +118,9 @@ public class BrowseFragment extends ListFragment implements
 		View view = inflater.inflate(R.layout.fragment_browse, container, false);
 		ListView list = (ListView) view.findViewById(android.R.id.list);
 		list.setEmptyView(view.findViewById(android.R.id.empty));
-		
+
+		mSwiperefresh = (SwipeRefreshLayout) view.findViewById(R.id.swiperefresh);
+
 		return view;
 	}
 	
@@ -132,8 +137,19 @@ public class BrowseFragment extends ListFragment implements
 		        UriBean uri = (UriBean) parent.getItemAtPosition(position);
 		        browseTo(uri);
 			}
-	    });
+			    });
+		//list.setEmptyView(getView().findViewById(android.R.id.empty));
 		registerForContextMenu(list);
+
+		mSwiperefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+			@Override
+			public void onRefresh() {
+				// This method performs the actual data-refresh operation.
+				// The method calls setRefreshing(false) when it's finished.
+				mSwiperefresh.setRefreshing(true);
+				refreshList();
+			}
+		});
 
 	    if (mAdapter == null) {
 	    	mAdapter = new BrowseAdapter(getActivity(), new ArrayList<UriBean>(), this);
@@ -265,9 +281,6 @@ public class BrowseFragment extends ListFragment implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case (R.id.menu_item_refresh):
-            	refreshList();
-            	return true;
             case (R.id.menu_search):
             	getActivity().onSearchRequested();
         	default:
@@ -276,7 +289,9 @@ public class BrowseFragment extends ListFragment implements
     }
     
     @SuppressWarnings("unchecked")
-	private void handleMessage(Message message) {    	 
+	private void handleMessage(Message message) {
+		mSwiperefresh.setRefreshing(false);
+
     	switch (message.what) {
     		case MESSAGE_SHOW_DIRECTORY_CONTENTS:
     			showDirectoryContents((List<UriBean>) message.obj);
