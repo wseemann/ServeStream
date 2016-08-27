@@ -69,7 +69,8 @@
 	<string name="save_label">Save</string>
 	<string name="share_label">Share</string>
 	<string name="view_url_label">View URL</string>
-	<string name="url_save_confirmation_msg">Are you sure you want to save \'%1$s\'?</string>
+    <string name="url_delete_confirmation_msg">Are you sure you want to delete \'%1$s\'?</string>
+    <string name="url_save_confirmation_msg">Are you sure you want to save \'%1$s\'?</string>
 	
 	<!-- Mediaplayer messages -->
 	<string name="buffering_message">Buffering. Please wait&#8230;</string>
