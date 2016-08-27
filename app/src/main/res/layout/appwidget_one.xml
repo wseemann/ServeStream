@@ -25,7 +25,6 @@
     android:background="@android:color/black" >
     
     <RelativeLayout
-        android:id="@+id/appwidget_two"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" >
         
