@@ -114,6 +114,7 @@ public class FFmpegMediaMetadataRetriever
 	private static final String [] JNI_LIBRARIES = {
 		"avutil",
 		"swscale",
+        "swresample",
 		"avcodec",
 		"avformat",
 		"ffmpeg_mediametadataretriever_jni"		

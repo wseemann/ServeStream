@@ -548,6 +548,7 @@ public class FFmpegMediaPlayer extends AbstractMediaPlayer
     private static final String [] JNI_LIBRARIES = {
             "avutil",
             "swscale",
+            "swresample",
             "avcodec",
             "avformat",
             "ffmpeg_mediaplayer_jni"
