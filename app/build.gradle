@@ -10,8 +10,8 @@ android {
         applicationId "net.sourceforge.servestream"
         minSdkVersion 12
         targetSdkVersion 23
-        versionName "0.7.2"
-        versionCode 110
+        versionName "0.7.3"
+        versionCode 114
     }
 
     lintOptions {
@@ -107,7 +107,7 @@ android {
         }
     }
 
-    Map<String, Integer> versionCodes = [armeabi: 110, 'armeabi-v7a': 111, mips: 112, x86: 113]
+    Map<String, Integer> versionCodes = [armeabi: 114, 'armeabi-v7a': 115, mips: 116, x86: 117]
 
     android.applicationVariants.all { variant ->
         // assign different version code for each output
