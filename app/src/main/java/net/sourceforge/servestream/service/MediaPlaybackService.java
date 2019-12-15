@@ -36,8 +36,6 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.media.AudioManager;
 import android.media.AudioManager.OnAudioFocusChangeListener;
 import android.net.Uri;
@@ -49,13 +47,12 @@ import android.os.SystemClock;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.support.v7.app.NotificationCompat;
+import android.support.v4.media.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
-import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import java.io.FileDescriptor;
@@ -1572,7 +1569,7 @@ public class MediaPlaybackService extends Service implements
         style.setShowCancelButton(true);
         style.setCancelButtonIntent(createPendingIntent(3, CMDSTOP));
 
-        NotificationCompat.Builder builder = (NotificationCompat.Builder) new NotificationCompat.Builder(this)
+        android.support.v4.app.NotificationCompat.Builder builder = new android.support.v4.app.NotificationCompat.Builder(this)
                 .setContentTitle(trackName)
                 .setContentText(contentText)
                 .setContentIntent(contentIntent)
@@ -1615,14 +1612,14 @@ public class MediaPlaybackService extends Service implements
         }
     }
 
-    private NotificationCompat.Action createPendingIntent(int icon, String title, int requestCode, String command) {
+    private android.support.v4.app.NotificationCompat.Action createPendingIntent(int icon, String title, int requestCode, String command) {
         Intent intent = new Intent(this, MediaPlaybackService.class);
         intent.setAction(MediaPlaybackService.SERVICECMD);
         intent.putExtra(MediaPlaybackService.CMDNOTIF, requestCode);
         intent.putExtra(MediaPlaybackService.CMDNAME, command);
         PendingIntent pendingIntent = PendingIntent.getService(this, requestCode, intent, 0);
 
-        return new NotificationCompat.Action.Builder(icon, title, pendingIntent).build();
+        return new android.support.v4.app.NotificationCompat.Action.Builder(icon, title, pendingIntent).build();
     }
 
     private PendingIntent createPendingIntent(int requestCode, String command) {

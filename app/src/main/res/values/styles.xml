@@ -21,78 +21,78 @@
     
     <style name="Theme.ServeStream.Dark" parent="@style/Theme.AppCompat">
         <item name="android:windowBackground">@android:color/black</item>
-        <item name="attr/ic_action_search">@drawable/ic_action_search_dark</item>
-        <item name="attr/ic_action_new">@drawable/ic_action_new_dark</item>
-        <item name="attr/drawer_shadow">@drawable/drawer_shadow_dark</item>
-        <item name="attr/ic_action_volume_on">@drawable/ic_action_volume_on_dark</item>
-        <item name="attr/ic_drawer">@drawable/ic_drawer_dark</item>
-        <item name="attr/ic_action_accept">@drawable/ic_action_accept_dark</item>
-        <item name="attr/ic_action_refresh">@drawable/ic_action_refresh_dark</item>
-        <item name="attr/borderless_button">@drawable/borderless_button</item>
-        <item name="attr/ic_action_overflow">@drawable/ic_action_overflow_dark</item>
-        <item name="attr/ic_action_settings">@drawable/ic_action_settings_dark</item>
-        <item name="attr/ic_action_settings_drawer">@drawable/ic_action_settings_dark</item>
-        <item name="attr/ic_action_discard">@drawable/ic_action_settings_dark</item>
-        <item name="attr/ic_action_cancel">@drawable/ic_action_cancel_dark</item>
+        <item name="ic_action_search">@drawable/ic_action_search_dark</item>
+        <item name="ic_action_new">@drawable/ic_action_new_dark</item>
+        <item name="drawer_shadow">@drawable/drawer_shadow_dark</item>
+        <item name="ic_action_volume_on">@drawable/ic_action_volume_on_dark</item>
+        <item name="ic_drawer">@drawable/ic_drawer_dark</item>
+        <item name="ic_action_accept">@drawable/ic_action_accept_dark</item>
+        <item name="ic_action_refresh">@drawable/ic_action_refresh_dark</item>
+        <item name="borderless_button">@drawable/borderless_button</item>
+        <item name="ic_action_overflow">@drawable/ic_action_overflow_dark</item>
+        <item name="ic_action_settings">@drawable/ic_action_settings_dark</item>
+        <item name="ic_action_settings_drawer">@drawable/ic_action_settings_dark</item>
+        <item name="ic_action_discard">@drawable/ic_action_settings_dark</item>
+        <item name="ic_action_cancel">@drawable/ic_action_cancel_dark</item>
         
-        <item name="attr/ic_av_repeat">@drawable/ic_av_repeat_dark</item>
-    	<item name="attr/ic_av_previous">@drawable/ic_av_previous_dark</item>
-    	<item name="attr/ic_av_pause_over_video_large">@drawable/ic_av_pause_over_video_large_dark</item>
-    	<item name="attr/ic_av_play_over_video_large">@drawable/ic_av_play_over_video_large_dark</item>
-    	<item name="attr/ic_av_next">@drawable/ic_av_next_dark</item>
-    	<item name="attr/ic_av_shuffle">@drawable/ic_av_shuffle_dark</item>
+        <item name="ic_av_repeat">@drawable/ic_av_repeat_dark</item>
+    	<item name="ic_av_previous">@drawable/ic_av_previous_dark</item>
+    	<item name="ic_av_pause_over_video_large">@drawable/ic_av_pause_over_video_large_dark</item>
+    	<item name="ic_av_play_over_video_large">@drawable/ic_av_play_over_video_large_dark</item>
+    	<item name="ic_av_next">@drawable/ic_av_next_dark</item>
+    	<item name="ic_av_shuffle">@drawable/ic_av_shuffle_dark</item>
     	
-    	<item name="attr/ic_av_play">@drawable/ic_av_play_dark</item>
-    	<item name="attr/ic_av_pause">@drawable/ic_av_pause_dark</item>
+    	<item name="ic_av_play">@drawable/ic_av_play_dark</item>
+    	<item name="ic_av_pause">@drawable/ic_av_pause_dark</item>
     	
-        <item name="attr/media_player_metadata_color_primary">@color/media_player_metadata_color_primary_dark</item>
-        <item name="attr/media_player_metadata_color_secondary">@color/media_player_metadata_color_primary_dark</item>
+        <item name="media_player_metadata_color_primary">@color/media_player_metadata_color_primary_dark</item>
+        <item name="media_player_metadata_color_secondary">@color/media_player_metadata_color_primary_dark</item>
         
-        <item name="attr/ic_mini_controller_pause">@drawable/ic_av_pause_dark</item>
-    	<item name="attr/ic_mini_controller_play">@drawable/ic_av_play_dark</item>
-    	<item name="attr/ic_mini_controller_stop">@drawable/ic_av_stop</item>
+        <item name="ic_mini_controller_pause">@drawable/ic_av_pause_dark</item>
+    	<item name="ic_mini_controller_play">@drawable/ic_av_play_dark</item>
+    	<item name="ic_mini_controller_stop">@drawable/ic_av_stop</item>
     	
-    	<item name="attr/divider_horizontal">@android:drawable/divider_horizontal_dark</item>
+    	<item name="divider_horizontal">@android:drawable/divider_horizontal_dark</item>
     	
-    	<item name="attr/nav_drawer_background">#3B3B3B</item>
+    	<item name="nav_drawer_background">#3B3B3B</item>
     </style>
 
     <style name="Theme.ServeStream.DarkActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="attr/ic_action_search">@drawable/ic_action_search_dark</item>
-        <item name="attr/ic_action_new">@drawable/ic_action_new_dark</item>
-        <item name="attr/drawer_shadow">@drawable/drawer_shadow_dark</item>
-        <item name="attr/ic_drawer">@drawable/ic_drawer_light</item>
-        <item name="attr/ic_action_volume_on">@drawable/ic_action_volume_on_dark</item>
-        <item name="attr/ic_action_accept">@drawable/ic_action_accept_dark</item>
-        <item name="attr/ic_action_refresh">@drawable/ic_action_refresh_dark</item>
-        <item name="attr/borderless_button">@drawable/borderless_button</item>
-        <item name="attr/ic_action_overflow">@drawable/ic_action_overflow_light</item>
-        <item name="attr/ic_action_settings">@drawable/ic_action_settings_dark</item>
-        <item name="attr/ic_action_settings_drawer">@drawable/ic_action_settings_light</item>
-        <item name="attr/ic_action_discard">@drawable/ic_action_discard_dark</item>
-        <item name="attr/ic_action_cancel">@drawable/ic_action_cancel_dark</item>
-        <item name="attr/float_background_color">@android:color/transparent</item>
+        <item name="ic_action_search">@drawable/ic_action_search_dark</item>
+        <item name="ic_action_new">@drawable/ic_action_new_dark</item>
+        <item name="drawer_shadow">@drawable/drawer_shadow_dark</item>
+        <item name="ic_drawer">@drawable/ic_drawer_light</item>
+        <item name="ic_action_volume_on">@drawable/ic_action_volume_on_dark</item>
+        <item name="ic_action_accept">@drawable/ic_action_accept_dark</item>
+        <item name="ic_action_refresh">@drawable/ic_action_refresh_dark</item>
+        <item name="borderless_button">@drawable/borderless_button</item>
+        <item name="ic_action_overflow">@drawable/ic_action_overflow_light</item>
+        <item name="ic_action_settings">@drawable/ic_action_settings_dark</item>
+        <item name="ic_action_settings_drawer">@drawable/ic_action_settings_light</item>
+        <item name="ic_action_discard">@drawable/ic_action_discard_dark</item>
+        <item name="ic_action_cancel">@drawable/ic_action_cancel_dark</item>
+        <item name="float_background_color">@android:color/transparent</item>
         
-        <item name="attr/ic_av_repeat">@drawable/ic_av_repeat_light</item>
-    	<item name="attr/ic_av_previous">@drawable/ic_av_previous_light</item>
-    	<item name="attr/ic_av_pause_over_video_large">@drawable/ic_av_pause_over_video_large_light</item>
-    	<item name="attr/ic_av_play_over_video_large">@drawable/ic_av_play_over_video_large_light</item>
-    	<item name="attr/ic_av_next">@drawable/ic_av_next_light</item>
-    	<item name="attr/ic_av_shuffle">@drawable/ic_av_shuffle_light</item>
+        <item name="ic_av_repeat">@drawable/ic_av_repeat_light</item>
+    	<item name="ic_av_previous">@drawable/ic_av_previous_light</item>
+    	<item name="ic_av_pause_over_video_large">@drawable/ic_av_pause_over_video_large_light</item>
+    	<item name="ic_av_play_over_video_large">@drawable/ic_av_play_over_video_large_light</item>
+    	<item name="ic_av_next">@drawable/ic_av_next_light</item>
+    	<item name="ic_av_shuffle">@drawable/ic_av_shuffle_light</item>
     	
-    	<item name="attr/ic_av_play">@drawable/ic_av_play_light</item>
-    	<item name="attr/ic_av_pause">@drawable/ic_av_pause_light</item>
+    	<item name="ic_av_play">@drawable/ic_av_play_light</item>
+    	<item name="ic_av_pause">@drawable/ic_av_pause_light</item>
     	
-        <item name="attr/media_player_metadata_color_primary">@color/media_player_metadata_color_primary_light</item>
-        <item name="attr/media_player_metadata_color_secondary">@color/media_player_metadata_color_primary_light</item>
+        <item name="media_player_metadata_color_primary">@color/media_player_metadata_color_primary_light</item>
+        <item name="media_player_metadata_color_secondary">@color/media_player_metadata_color_primary_light</item>
         
-        <item name="attr/ic_mini_controller_pause">@drawable/ic_av_pause_light</item>
-    	<item name="attr/ic_mini_controller_play">@drawable/ic_av_play_light</item>
-    	<item name="attr/ic_mini_controller_stop">@drawable/ic_av_stop</item>
+        <item name="ic_mini_controller_pause">@drawable/ic_av_pause_light</item>
+    	<item name="ic_mini_controller_play">@drawable/ic_av_play_light</item>
+    	<item name="ic_mini_controller_stop">@drawable/ic_av_stop</item>
     	
-    	<item name="attr/divider_horizontal">@android:drawable/divider_horizontal_bright</item>
+    	<item name="divider_horizontal">@android:drawable/divider_horizontal_bright</item>
     	
-    	<item name="attr/nav_drawer_background">@android:color/white</item>
+    	<item name="nav_drawer_background">@android:color/white</item>
     	
     	<item name="android:actionModeCutDrawable" tools:targetApi="11">@drawable/ic_action_cut</item>
         <item name="android:actionModeCopyDrawable" tools:targetApi="11">@drawable/ic_action_copy</item>

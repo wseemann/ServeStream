@@ -480,7 +480,7 @@ public class MusicUtils {
     
     public static int getCardId(Context context) {
         SharedPreferences preferences = context.getSharedPreferences("Music",
-                Activity.MODE_WORLD_READABLE | Activity.MODE_WORLD_WRITEABLE);
+                Activity.MODE_PRIVATE);
         boolean canRead = preferences.getBoolean("read_external_storage", false);
 
         int id = -1;
