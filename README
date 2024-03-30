@@ -15,3 +15,8 @@ ndk.dir=/home/user/Android/android-ndk-r8c
 3.) Finally, from the project root run the following command to build the application:
 
 ant clean debug
+
+Privacy
+-------
+
+ServeStream does not collect or share any user data.
